@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -8,23 +9,26 @@ from bs4 import BeautifulSoup
 
 
 def index(request):
-    page = 1
+    page = 20
     all_news = []
-    for i in range(page):
-        if i == 1:
-            html_doc = requests.get(f'https://news.ycombinator.com/newest?next=30056583&n={i}')
-        else:
-            html_doc = requests.get(f'https://news.ycombinator.com/newest?next=30056583&n={i * 30}')
-        soup = BeautifulSoup(html_doc.text)
-        items = soup.find_all('a', class_='titlelink')
-        for j in items:
-            all_news.append(j)
-            adder = Post.objects.create(title=j.text, url=j['href'])
-            adder.save()
-
+    if len(Post.objects.all()) < 40:
+        for i in range(page):
+            if i == 1:
+                html_doc = requests.get(f'https://news.ycombinator.com/newest?next=30056583&n={i}')
+            else:
+                html_doc = requests.get(f'https://news.ycombinator.com/newest?next=30056583&n={i * 30}')
+            soup = BeautifulSoup(html_doc.text)
+            items = soup.find_all('a', class_='titlelink')
+            for j in items:
+                all_news.append(j)
+                adder = Post.objects.create(title=j.text, url=j['href'])
+                adder.save()
     post_list = Post.objects.all()
-    return render(request, 'List/index.html', {'post_list': post_list})
-
+    paginator = Paginator(post_list, 30)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    # return HttpResponse(post_list)
+    return render(request, 'List/index.html', {'page_obj': page_obj})
 
 @login_required()
 def author(request, username):
