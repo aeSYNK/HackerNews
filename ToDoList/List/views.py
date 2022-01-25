@@ -1,23 +1,29 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, PostForm
 from .models import Post
-from .forms import PostForm
+import requests
+from bs4 import BeautifulSoup
 
 
 def index(request):
-    post_list = Post.objects.filter(author__username=request.user)
-    if request.method == "POST":
-        form = PostForm(request.POST)
-        post = form.save(commit=False)
-        post.author = request.user
-        post.save()
-        return redirect('/')
+    page = 1
+    all_news = []
+    for i in range(page):
+        if i == 1:
+            html_doc = requests.get(f'https://news.ycombinator.com/newest?next=30056583&n={i}')
+        else:
+            html_doc = requests.get(f'https://news.ycombinator.com/newest?next=30056583&n={i * 30}')
+        soup = BeautifulSoup(html_doc.text)
+        items = soup.find_all('a', class_='titlelink')
+        for j in items:
+            all_news.append(j)
+            adder = Post.objects.create(title=j.text, url=j['href'])
+            adder.save()
 
-    else:
-        form = PostForm()
-    return render(request, 'List/index.html', {'post_list': post_list, 'form': form})
+    post_list = Post.objects.all()
+    return render(request, 'List/index.html', {'post_list': post_list})
 
 
 @login_required()

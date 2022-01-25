@@ -1,19 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.db.models import Model
 
 
 class Post(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField('Название', max_length=70)
-    text = models.TextField('Текст', blank=True)
-    is_done = models.BooleanField(default=False)
-    pub_date = models.DateTimeField('Время создания', auto_now_add=True)
-
-    def make_it_done(self):
-        self.is_done = True
-
-    def make_it_undone(self):
-        self.is_done = False
+    title = models.CharField('Название', max_length=250)
+    url = models.URLField('Адрес')
 
     def __str__(self):
         return f"{self.title}"
@@ -21,3 +12,4 @@ class Post(models.Model):
     class Meta:
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
+
