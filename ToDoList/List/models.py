@@ -13,3 +13,7 @@ class Post(models.Model):
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
 
+
+class Comment(models.Model):
+    text = models.TextField()
+    from_post = models.ForeignKey(Post, on_delete=models.CASCADE)
