@@ -1,17 +1,18 @@
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegisterForm, PostForm
-from .models import Post
+from .models import Post, Comment
 import requests
 from bs4 import BeautifulSoup
 
 
 def index(request):
-    page = 20
+    page = 1
     all_news = []
-    if len(Post.objects.all()) < 40:
+    if len(Post.objects.all()) < 1000:
         for i in range(page):
             if i == 1:
                 html_doc = requests.get(f'https://news.ycombinator.com/newest?next=30056583&n={i}')
@@ -19,10 +20,26 @@ def index(request):
                 html_doc = requests.get(f'https://news.ycombinator.com/newest?next=30056583&n={i * 30}')
             soup = BeautifulSoup(html_doc.text)
             items = soup.find_all('a', class_='titlelink')
-            for j in items:
+            comments = soup.find_all('td', class_='subtext')
+            pus = []
+            for j, o in zip(items, comments):
                 all_news.append(j)
                 adder = Post.objects.create(title=j.text, url=j['href'])
                 adder.save()
+                # return HttpResponse(adder.pk)
+                for das in o:
+                    if '<a href="item?id=' in str(das):
+                        comment = das.a['href']
+                        com_site = requests.get('https://news.ycombinator.com/' + str(comment))
+                        comm = BeautifulSoup(com_site.text)
+                        comms = comm.find_all('table', class_='comment-tree')
+                        for chto in comms:
+                            dastaq = Comment.objects.create(text=chto, from_post=adder.pk)
+                            dastaq.save()
+                        pus.append(comment)
+                        break
+            return HttpResponse(pus)
+
     post_list = Post.objects.all()
     paginator = Paginator(post_list, 30)
     page_number = request.GET.get('page')
@@ -39,7 +56,8 @@ def author(request, username):
 @login_required()
 def detail(request, pk):
     post = Post.objects.get(pk=pk)
-    return render(request, 'List/detail.html', {'post': post})
+    comment = Comment.object.filter(from_post=pk)
+    return render(request, 'List/detail.html', {'post': post, 'comment': comment})
 
 
 def register(request):
