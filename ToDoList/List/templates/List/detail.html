@@ -8,7 +8,7 @@
 
 <div class="container mb-2">
     <button class="save btn btn-default"><i class='fa fa-pencil fa-lg'></i><a href="{% url 'post_edit' pk=post.pk %}"> Редактировать</a></button>
-    <button class="save btn btn-default"><i class='fa fa-pencil fa-lg'></i><a href="{{ post.url }}"> Перейти</a></button>
+    <a href="{{ post.url }}" class="btn btn-danger "><i class='fa fa-pencil fa-lg'>link</i> </a>
     <button type="submit" class="save btn btn-default"><i class="fa fa-trash-o fa-lg"></i><a href="{% url 'post_delete' pk=post.pk %}"> Удалить</a></button>
 
 </div>

@@ -27,18 +27,19 @@ def index(request):
                 adder = Post.objects.create(title=j.text, url=j['href'])
                 adder.save()
                 # return HttpResponse(adder.pk)
-                for das in o:
-                    if '<a href="item?id=' in str(das):
-                        comment = das.a['href']
-                        com_site = requests.get('https://news.ycombinator.com/' + str(comment))
-                        comm = BeautifulSoup(com_site.text)
-                        comms = comm.find_all('table', class_='comment-tree')
-                        for chto in comms:
-                            dastaq = Comment.objects.create(text=chto, from_post=adder.pk)
-                            dastaq.save()
-                        pus.append(comment)
-                        break
-            return HttpResponse(pus)
+                # for das in o:
+                #     if '<a href="item?id=' in str(das):
+                #         comment = das.a['href']
+                #         com_site = requests.get('https://news.ycombinator.com/' + str(comment))
+                #         comm = BeautifulSoup(com_site.text)
+                #         comms = comm.find_all('table', class_='comment-tree')
+                #         for chto in comms:
+                #             dastaq = Comment.objects.create(text=comms)
+                #
+                #             dastaq.save()
+                #         pus.append(comment)
+                #         break
+            # return HttpResponse(pus)
 
     post_list = Post.objects.all()
     paginator = Paginator(post_list, 30)
@@ -46,6 +47,7 @@ def index(request):
     page_obj = paginator.get_page(page_number)
     # return HttpResponse(post_list)
     return render(request, 'List/index.html', {'page_obj': page_obj})
+
 
 @login_required()
 def author(request, username):
