@@ -58,8 +58,8 @@ def author(request, username):
 @login_required()
 def detail(request, pk):
     post = Post.objects.get(pk=pk)
-    comment = Comment.object.filter(from_post=pk)
-    return render(request, 'List/detail.html', {'post': post, 'comment': comment})
+    # comment = Comment.object.filter(from_post=pk)
+    return render(request, 'List/detail.html', {'post': post})
 
 
 def register(request):
